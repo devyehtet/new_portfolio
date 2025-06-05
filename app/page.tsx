@@ -68,7 +68,7 @@ export default function Home() {
             className="mb-6 sm:mb-8"
           >
             <Image
-              src="/placeholder.svg?height=200&width=200"
+              src="/YHA.jpeg?height=200&width=200"
               alt="Ye Htet Aung"
               width={200}
               height={200}
