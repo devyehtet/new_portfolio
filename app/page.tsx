@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -16,20 +15,25 @@ import {
   FaUsers,
   FaSearchDollar,
 } from "react-icons/fa"
+import { sendEmail } from "./actions"
 
 export default function Home() {
   const [formStatus, setFormStatus] = useState<{ success?: boolean; message?: string } | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const formData = new FormData(event.currentTarget)
+    setIsSubmitting(true)
+    setFormStatus(null)
 
-    try {
-      // Replace with your actual form submission logic
-      setFormStatus({ success: true, message: "Message sent successfully!" })
+    const formData = new FormData(event.currentTarget)
+    const result = await sendEmail(formData)
+
+    setFormStatus(result)
+    setIsSubmitting(false)
+
+    if (result.success) {
       event.currentTarget.reset()
-    } catch (error) {
-      setFormStatus({ success: false, message: "Failed to send message. Please try again." })
     }
   }
 
@@ -64,7 +68,7 @@ export default function Home() {
             className="mb-6 sm:mb-8"
           >
             <Image
-              src="/YHA.jpeg?height=200&width=200"
+              src="/placeholder.svg?height=200&width=200"
               alt="Ye Htet Aung"
               width={200}
               height={200}
@@ -450,7 +454,8 @@ export default function Home() {
                       id="name"
                       name="name"
                       required
-                      className="w-full px-3 py-2 text-emerald-900 bg-emerald-100 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      disabled={isSubmitting}
+                      className="w-full px-3 py-2 text-emerald-900 bg-emerald-100 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
                       placeholder="Your Name"
                     />
                   </div>
@@ -463,7 +468,8 @@ export default function Home() {
                       id="email"
                       name="email"
                       required
-                      className="w-full px-3 py-2 text-emerald-900 bg-emerald-100 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      disabled={isSubmitting}
+                      className="w-full px-3 py-2 text-emerald-900 bg-emerald-100 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
                       placeholder="your@email.com"
                     />
                   </div>
@@ -476,7 +482,8 @@ export default function Home() {
                       id="subject"
                       name="subject"
                       required
-                      className="w-full px-3 py-2 text-emerald-900 bg-emerald-100 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      disabled={isSubmitting}
+                      className="w-full px-3 py-2 text-emerald-900 bg-emerald-100 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
                       placeholder="How can I help you?"
                     />
                   </div>
@@ -489,21 +496,57 @@ export default function Home() {
                       name="message"
                       required
                       rows={4}
-                      className="w-full px-3 py-2 text-emerald-900 bg-emerald-100 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      disabled={isSubmitting}
+                      className="w-full px-3 py-2 text-emerald-900 bg-emerald-100 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
                       placeholder="Your message here..."
                     ></textarea>
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-emerald-600 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-700 transition-colors duration-300"
+                    disabled={isSubmitting}
+                    className="w-full bg-emerald-600 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    Send Message
+                    {isSubmitting ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Sending...
+                      </>
+                    ) : (
+                      "Send Message"
+                    )}
                   </button>
                 </form>
                 {formStatus && (
-                  <div className={`mt-4 text-center ${formStatus.success ? "text-green-400" : "text-red-400"}`}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`mt-4 p-4 rounded-md text-center ${
+                      formStatus.success
+                        ? "bg-green-900/50 text-green-400 border border-green-700"
+                        : "bg-red-900/50 text-red-400 border border-red-700"
+                    }`}
+                  >
                     {formStatus.message}
-                  </div>
+                  </motion.div>
                 )}
               </motion.div>
             </div>
